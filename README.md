@@ -22,7 +22,7 @@ git push -uf origin main
 
 ## Integrate with your tools
 
-- [ ] [Set up project integrations](https://gitlab.com/RekhuGopal/gcp-iac/-/settings/integrations)
+- [ ] [Set up project integrations](https://gitlab.com/vikaskanchagarbelagal/GCP_IAC_CI-CD/-/settings/integrations)
 
 ## Collaborate with your team
 
