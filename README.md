@@ -15,7 +15,7 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://gitlab.com/vikaskanchagarbelagal/gcp_iac_CI-CD.git
+git remote add origin https://github.com/vikaskanchagarbelagal/GCP_IAC_CI-CD.git
 git branch -M main
 git push -uf origin main
 ```
