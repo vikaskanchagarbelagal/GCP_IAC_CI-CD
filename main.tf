@@ -1,5 +1,5 @@
 resource "google_compute_instance" "minimal_vm" {
-  name         = "minimal-ubuntu-vm"
+  name         = "vicky-vm-ci-cd-pipeline"
   machine_type = "e2-micro"  # Very small and low-cost
   zone         = "us-central1-a"
 
