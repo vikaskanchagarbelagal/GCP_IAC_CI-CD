@@ -1,0 +1,96 @@
+# .github/workflows/terraform.yml
+name: Terraform CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Enables manual triggers from GitHub UI
+
+env:
+  TF_IN_AUTOMATION: true
+  GOOGLE_APPLICATION_CREDENTIALS: ./creds/serviceaccount.json
+
+jobs:
+  validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    container:
+      image: hashicorp/terraform:light
+      options: --entrypoint '/usr/bin/env'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Clean up .terraform
+        run: rm -rf .terraform
+
+      - name: Terraform Version
+        run: terraform --version
+
+      - name: Setup Credentials
+        run: |
+          mkdir -p ./creds
+          echo "${{ secrets.SERVICEACCOUNT }}" | base64 -d > ./creds/serviceaccount.json
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+  plan:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    container:
+      image: hashicorp/terraform:light
+      options: --entrypoint '/usr/bin/env'
+    needs: validate
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Credentials
+        run: |
+          mkdir -p ./creds
+          echo "${{ secrets.SERVICEACCOUNT }}" | base64 -d > ./creds/serviceaccount.json
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -out planfile
+
+      - name: Upload planfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-planfile
+          path: planfile
+
+  apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    container:
+      image: hashicorp/terraform:light
+      options: --entrypoint '/usr/bin/env'
+    needs: plan
+    if: github.event_name == 'workflow_dispatch'  # Only run on manual trigger
+    environment:
+      name: production
+      # Optional: Add required reviewers to gate approval
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Credentials
+        run: |
+          mkdir -p ./creds
+          echo "${{ secrets.SERVICEACCOUNT }}" | base64 -d > ./creds/serviceaccount.json
+
+      - name: Download planfile
+        uses: actions/download-artifact@v4
+        with:
+          name: tf-planfile
+          path: .
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -input=false planfile

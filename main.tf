@@ -1,7 +1,27 @@
-resource "google_storage_bucket" "auto-expire" {
-  name          = "cloudquicklabs_gcp_bucket_iac"
-  location      = "US"
-  force_destroy = true
+resource "google_compute_instance" "minimal_vm" {
+  name         = "minimal-ubuntu-vm"
+  machine_type = "e2-micro"  # Very small and low-cost
+  zone         = "us-central1-a"
 
-  public_access_prevention = "enforced"
+  tags = ["terraform"]
+
+  boot_disk {
+    initialize_params {
+      image = "ubuntu-os-cloud/ubuntu-2204-lts"
+      size  = 10  # Smallest recommended boot disk size (in GB)
+    }
+  }
+
+  network_interface {
+    network       = "default"
+    access_config {}  # Required to give the instance a public IP
+  }
+
+  metadata = {
+    startup-script = "echo Hello from Terraform"
+  }
+
+  labels = {
+    environment = "test"
+  }
 }
